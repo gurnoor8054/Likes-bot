@@ -227,7 +227,7 @@ def handle_help(message):
 /resetcooldown <i>like|spam|visit</i> – Reset cooldown for a user  
 /reset <i>[all|user_id] [like|spam|visit]</i> – Reset command limits  
 /restart – Restart the bot  
-/setfooter <text> – Change the JOIN US footer
+/setfooter &lt;text&gt; – Change the JOIN US footer
 """
 
     send_html(message, help_text)
