@@ -1458,7 +1458,7 @@ def handle_prefixless_get(message):
             os.remove('temp_banner.webp')
 
         # 👕 Send Outfit Image (no caption)
-        outfit_url = f"https://aditya-outfit-v9op.onrender.com/outfit-image?uid={uid}&region={region}"
+        outfit_url = f"https://aditya-outfit-v9op.onrender.com/outfit-image?uid={uid}&region={region}&bg=https://dl.cdn.freefiremobile.com/common/OB49/CSH/FF_UI_Profile_Bg02.jpg"
         outfit_res = requests.get(outfit_url, stream=True, timeout=30)
         if outfit_res.status_code == 200:
             with open('temp_outfit.jpg', 'wb') as f:
