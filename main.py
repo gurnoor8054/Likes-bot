@@ -1249,9 +1249,9 @@ def format_player_response(data, uid):
 ├─ Prime Level: {info.get("primeLevel", {}).get("level", "Not Found")}
 ├─ Name: {escape(info.get("nickname", "Not Found"))}
 ├─ UID: {uid}
-├─ Level: {info.get("level", "Not Found")} (Exp: {info.get("exp", "Not Found"):,})
+├─ Level: {info.get("level", "Not Found")} (Exp: {info.get("exp", "Not Found")})
 ├─ Region: {info.get("region", "Not Found")}
-├─ Likes: {info.get("liked", "Not Found"):,}
+├─ Likes: {info.get("liked", "Not Found")}
 ├─ Honor Score: {credit.get("creditScore", "Not Found")}
 ├─ Celebrity Status: False
 ├─ Evo Access Badge: inactive
@@ -1308,7 +1308,7 @@ def format_player_response(data, uid):
 └─ Leader Info:
     ├─ Leader Name: {escape(captain.get("nickname", "Not Found"))}
     ├─ Leader UID: {captain.get("accountId", "Not Found")}
-    ├─ Leader Level: {captain.get("level", "Not Found")} (Exp: {captain.get("exp", "Not Found"):,})
+    ├─ Leader Level: {captain.get("level", "Not Found")} (Exp: {captain.get("exp", "Not Found")})
     ├─ Leader Created At: {ts(captain.get("createAt", "Not Found"))}
     ├─ Leader Last Login: {ts(captain.get("lastLoginAt", "Not Found"))}
     ├─ Leader Title: {captain.get("title", "Not Found")}
