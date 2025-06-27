@@ -12,6 +12,7 @@ from threading import Thread
 import time
 from html import escape
 from PIL import Image
+from telebot import types
 
 # ===== CONFIGURATION =====
 BOT_TOKEN = os.getenv("BOT_TOKEN") or "7600901166:AAGNQqporXihfENBUPv2bs1uNHXbhdWvNX8"
@@ -228,6 +229,8 @@ def handle_help(message):
 /reset <i>[all|user_id] [like|spam|visit]</i> – Reset command limits  
 /restart – Restart the bot  
 /setfooter &lt;text&gt; – Change the JOIN US footer
+/groups – Show all cached group info with leave button
+/leave <i>group_id</i> – Leave any group by ID
 """
 
     send_html(message, help_text)
@@ -1501,6 +1504,114 @@ def handle_setfooter(message):
     except IndexError:
         send_html(message, "<b>❌ Please provide footer text.</b>\nUsage: <code>/setfooter Your footer text here</code>")
 
+#- TO CHECK ALL JOINED GROUPS -#
+
+group_cache = {}
+
+# Update cache on any group message
+@bot.message_handler(func=lambda m: m.chat.type in ['group', 'supergroup'])
+def cache_group_info(m):
+    group_cache[m.chat.id] = {
+        'title': m.chat.title,
+        'username': m.chat.username,
+        'last_message': m.text
+    }
+
+# /groups command (admin only)
+@bot.message_handler(commands=['groups'])
+def handle_groups(message):
+    if message.from_user.id != YOUR_USER_ID:
+        return
+
+    if not group_cache:
+        bot.reply_to(message, "❌ No group data cached yet.")
+        return
+
+    for group_id, info in group_cache.items():
+        title = info['title']
+        username = info['username']
+        link = f"https://t.me/{username}" if username else "Private group (no link)"
+        last_msg = info['last_message']
+
+        text = f"""📣 <b>Group Info</b>
+<b>Name:</b> {title}
+<b>ID:</b> <code>{group_id}</code>
+<b>Link:</b> {link}
+<b>Last Msg:</b> {escape(last_msg)}"""
+
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton("🚪 Leave Group", callback_data=f"leave_{group_id}"))
+
+        bot.send_message(message.chat.id, text, parse_mode="HTML", disable_web_page_preview=True, reply_markup=markup)
+
+# Leave group on button press
+@bot.callback_query_handler(func=lambda call: call.data.startswith("leave_"))
+def handle_leave_button(call):
+    if call.from_user.id != YOUR_USER_ID:
+        bot.answer_callback_query(call.id, "❌ Not allowed.")
+        return
+
+    group_id = int(call.data.split("_")[1])
+    try:
+        bot.leave_chat(group_id)
+        bot.answer_callback_query(call.id, "✅ Left the group.")
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
+    except Exception as e:
+        bot.answer_callback_query(call.id, f"❌ Error: {e}")
+
+#- command to leave the group by id -#
+@bot.message_handler(commands=['leave'])
+def leave_group_cmd(message):
+    if message.from_user.id != YOUR_USER_ID:
+        return send_html(message, "<b>🚫 You are not authorized to use this command.</b>")
+
+    parts = message.text.strip().split()
+    if len(parts) != 2:
+        return send_html(message, "<b>❌ Usage:</b> <code>/leave &lt;group_id&gt;</code>\nExample: <code>/leave -1001234567890</code>")
+
+    try:
+        group_id = int(parts[1])
+
+        markup = types.InlineKeyboardMarkup()
+        btn = types.InlineKeyboardButton("✅ Confirm Leave", callback_data=f"confirmleave_{group_id}")
+        markup.add(btn)
+
+        bot.send_message(
+            message.chat.id,
+            f"<b>⚠️ Confirm Leave</b>\nAre you sure you want me to leave group <code>{group_id}</code>?",
+            parse_mode="HTML",
+            reply_markup=markup
+        )
+
+    except ValueError:
+        send_html(message, "<b>❌ Invalid Group ID format.</b>")
+
+#- 2nd confirms button for leaving the group -#
+@bot.callback_query_handler(func=lambda call: call.data.startswith("confirmleave_"))
+def handle_confirm_leave(call):
+    if call.from_user.id != YOUR_USER_ID:
+        return bot.answer_callback_query(call.id, "❌ You are not allowed.")
+
+    group_id = int(call.data.split("_")[1])
+    try:
+        bot.leave_chat(group_id)
+        bot.answer_callback_query(call.id, "✅ Left the group.")
+        bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            text=f"<b>✅ Successfully left group:</b> <code>{group_id}</code>",
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        bot.answer_callback_query(call.id, f"❌ Error occurred.")
+        bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            text=f"<b>❌ Failed to leave group:</b> <code>{group_id}</code>\nError: <code>{escape(str(e))}</code>",
+            parse_mode="HTML"
+        )
+
+    
 
 
 # ===== START BOT =====
