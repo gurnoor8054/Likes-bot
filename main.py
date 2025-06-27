@@ -1416,7 +1416,7 @@ def handle_prefixless_get(message):
     )
 
     try:
-        info_url = f"https://aditya-info-v9op.onrender.com/player-info?uid={uid}&region={region}"
+        info_url = f"https://aditya-info-v10op.onrender.com/player-info?uid={uid}&region={region}"
         info_res = requests.get(info_url, timeout=30)
         info_data = info_res.json()
         
@@ -1437,7 +1437,7 @@ def handle_prefixless_get(message):
         )
 
         # 🖼️ Send Banner as Sticker
-        banner_url = f"https://aditya-banner-v9op.onrender.com/banner-image?uid={uid}&region={region}"
+        banner_url = f"https://aditya-banner-v10op.onrender.com/banner-image?uid={uid}&region={region}"
         banner_res = requests.get(banner_url, stream=True, timeout=30)
         if banner_res.status_code == 200:
             with open('temp_banner.jpg', 'wb') as f:
@@ -1458,7 +1458,7 @@ def handle_prefixless_get(message):
             os.remove('temp_banner.webp')
 
         # 👕 Send Outfit Image (no caption)
-        outfit_url = f"https://aditya-outfit-v9op.onrender.com/outfit-image?uid={uid}&region={region}"
+        outfit_url = f"https://aditya-outfit-v10op.onrender.com/outfit-image?uid={uid}&region={region}"
         outfit_res = requests.get(outfit_url, stream=True, timeout=30)
         if outfit_res.status_code == 200:
             with open('temp_outfit.jpg', 'wb') as f:
