@@ -1508,29 +1508,28 @@ def handle_setfooter(message):
 
 group_cache = {}
 
-# Update cache on any group message
+# Cache group info from any message
 @bot.message_handler(func=lambda m: m.chat.type in ['group', 'supergroup'])
 def cache_group_info(m):
     group_cache[m.chat.id] = {
-        'title': m.chat.title,
+        'title': m.chat.title or "Unnamed Group",
         'username': m.chat.username,
-        'last_message': m.text
+        'last_message': m.text or "No text"
     }
 
-# /groups command (admin only)
+# /groups command to list known groups
 @bot.message_handler(commands=['groups'])
 def handle_groups(message):
     if message.from_user.id != YOUR_USER_ID:
         return
 
     if not group_cache:
-        bot.reply_to(message, "❌ No group data cached yet.")
-        return
+        return send_html(message, "❌ No group data available.")
 
     for group_id, info in group_cache.items():
         title = info['title']
         username = info['username']
-        link = f"https://t.me/{username}" if username else "Private group (no link)"
+        link = f"https://t.me/{username}" if username else "Private group"
         last_msg = info['last_message']
 
         text = f"""📣 <b>Group Info</b>
@@ -1539,63 +1538,39 @@ def handle_groups(message):
 <b>Link:</b> {link}
 <b>Last Msg:</b> {escape(last_msg)}"""
 
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("🚪 Leave Group", callback_data=f"leave_{group_id}"))
+        btn = types.InlineKeyboardButton("🚪 Leave Group", callback_data=f"leave_{group_id}")
+        markup = types.InlineKeyboardMarkup().add(btn)
 
-        bot.send_message(message.chat.id, text, parse_mode="HTML", disable_web_page_preview=True, reply_markup=markup)
+        bot.send_message(message.chat.id, text, parse_mode="HTML", reply_markup=markup)
 
-# Leave group on button press
+# Leave group via inline button
 @bot.callback_query_handler(func=lambda call: call.data.startswith("leave_"))
-def handle_leave_button(call):
+def handle_leave_inline(call):
     if call.from_user.id != YOUR_USER_ID:
-        bot.answer_callback_query(call.id, "❌ Not allowed.")
-        return
+        return bot.answer_callback_query(call.id, "❌ Not allowed")
 
-    group_id = int(call.data.split("_")[1])
-    try:
-        bot.leave_chat(group_id)
-        bot.answer_callback_query(call.id, "✅ Left the group.")
-        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
-    except Exception as e:
-        bot.answer_callback_query(call.id, f"❌ Error: {e}")
+    group_id = call.data.split("_")[1]
+    confirm_btn = types.InlineKeyboardButton("✅ Confirm Leave", callback_data=f"confirmleave_{group_id}")
+    markup = types.InlineKeyboardMarkup().add(confirm_btn)
 
-#- command to leave the group by id -#
-@bot.message_handler(commands=['leave'])
-def leave_group_cmd(message):
-    if message.from_user.id != YOUR_USER_ID:
-        return send_html(message, "<b>🚫 You are not authorized to use this command.</b>")
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text=f"⚠️ Are you sure you want me to leave group <code>{group_id}</code>?",
+        parse_mode="HTML",
+        reply_markup=markup
+    )
 
-    parts = message.text.strip().split()
-    if len(parts) != 2:
-        return send_html(message, "<b>❌ Usage:</b> <code>/leave &lt;group_id&gt;</code>\nExample: <code>/leave -1001234567890</code>")
-
-    try:
-        group_id = int(parts[1])
-
-        markup = types.InlineKeyboardMarkup()
-        btn = types.InlineKeyboardButton("✅ Confirm Leave", callback_data=f"confirmleave_{group_id}")
-        markup.add(btn)
-
-        bot.send_message(
-            message.chat.id,
-            f"<b>⚠️ Confirm Leave</b>\nAre you sure you want me to leave group <code>{group_id}</code>?",
-            parse_mode="HTML",
-            reply_markup=markup
-        )
-
-    except ValueError:
-        send_html(message, "<b>❌ Invalid Group ID format.</b>")
-
-#- 2nd confirms button for leaving the group -#
+# Confirm leave
 @bot.callback_query_handler(func=lambda call: call.data.startswith("confirmleave_"))
-def handle_confirm_leave(call):
+def confirm_leave(call):
     if call.from_user.id != YOUR_USER_ID:
-        return bot.answer_callback_query(call.id, "❌ You are not allowed.")
+        return bot.answer_callback_query(call.id, "❌ Not allowed")
 
     group_id = int(call.data.split("_")[1])
     try:
         bot.leave_chat(group_id)
-        bot.answer_callback_query(call.id, "✅ Left the group.")
+        bot.answer_callback_query(call.id, "✅ Left the group")
         bot.edit_message_text(
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
@@ -1603,15 +1578,35 @@ def handle_confirm_leave(call):
             parse_mode="HTML"
         )
     except Exception as e:
-        bot.answer_callback_query(call.id, f"❌ Error occurred.")
+        bot.answer_callback_query(call.id, "❌ Failed")
         bot.edit_message_text(
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
-            text=f"<b>❌ Failed to leave group:</b> <code>{group_id}</code>\nError: <code>{escape(str(e))}</code>",
+            text=f"<b>❌ Failed to leave group:</b> <code>{group_id}</code>\n<code>{escape(str(e))}</code>",
             parse_mode="HTML"
         )
 
-    
+# /leave <group_id> command (admin only)
+@bot.message_handler(commands=['leave'])
+def handle_leave_command(message):
+    if message.from_user.id != YOUR_USER_ID:
+        return send_html(message, "❌ Not authorized.")
+
+    parts = message.text.strip().split()
+    if len(parts) != 2:
+        return send_html(message, "<b>Usage:</b> <code>/leave -1001234567890</code>")
+
+    group_id = parts[1]
+
+    btn = types.InlineKeyboardButton("✅ Confirm Leave", callback_data=f"confirmleave_{group_id}")
+    markup = types.InlineKeyboardMarkup().add(btn)
+
+    bot.send_message(
+        message.chat.id,
+        f"⚠️ Are you sure you want me to leave group <code>{group_id}</code>?",
+        parse_mode="HTML",
+        reply_markup=markup
+    )
 
 
 # ===== START BOT =====
