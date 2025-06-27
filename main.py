@@ -15,7 +15,7 @@ from PIL import Image
 from telebot import types
 
 # ===== CONFIGURATION =====
-BOT_TOKEN = os.getenv("BOT_TOKEN") or "7600901166:AAGNQqporXihfENBUPv2bs1uNHXbhdWvNX8"
+BOT_TOKEN = os.getenv("BOT_TOKEN") or "7600901166:AAG3ayOfBVTpkJEfPlSz7KwmdmPyQhaptl4"
 YOUR_USER_ID = 7863700139
 SUPPORTED_REGIONS = {"ind", "sg", "eu", "me", "id", "bd", "ru", "vn", "tw", "th", "pk", "br", "sac", "us", "cis", "na"}
 
