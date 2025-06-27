@@ -12,10 +12,9 @@ from threading import Thread
 import time
 from html import escape
 from PIL import Image
-from telebot import types
 
 # ===== CONFIGURATION =====
-BOT_TOKEN = os.getenv("BOT_TOKEN") or "7600901166:AAG3ayOfBVTpkJEfPlSz7KwmdmPyQhaptl4"
+BOT_TOKEN = os.getenv("BOT_TOKEN") or "8161038098:AAHZYGTm8Eqvg4frmmvH3gCN4sd7VT6Ik_Y"
 YOUR_USER_ID = 7863700139
 SUPPORTED_REGIONS = {"ind", "sg", "eu", "me", "id", "bd", "ru", "vn", "tw", "th", "pk", "br", "sac", "us", "cis", "na"}
 
@@ -1504,109 +1503,6 @@ def handle_setfooter(message):
     except IndexError:
         send_html(message, "<b>❌ Please provide footer text.</b>\nUsage: <code>/setfooter Your footer text here</code>")
 
-#- TO CHECK ALL JOINED GROUPS -#
-
-group_cache = {}
-
-# Cache group info from any message
-@bot.message_handler(func=lambda m: m.chat.type in ['group', 'supergroup'])
-def cache_group_info(m):
-    group_cache[m.chat.id] = {
-        'title': m.chat.title or "Unnamed Group",
-        'username': m.chat.username,
-        'last_message': m.text or "No text"
-    }
-
-# /groups command to list known groups
-@bot.message_handler(commands=['groups'])
-def handle_groups(message):
-    if message.from_user.id != YOUR_USER_ID:
-        return
-
-    if not group_cache:
-        return send_html(message, "❌ No group data available.")
-
-    for group_id, info in group_cache.items():
-        title = info['title']
-        username = info['username']
-        link = f"https://t.me/{username}" if username else "Private group"
-        last_msg = info['last_message']
-
-        text = f"""📣 <b>Group Info</b>
-<b>Name:</b> {title}
-<b>ID:</b> <code>{group_id}</code>
-<b>Link:</b> {link}
-<b>Last Msg:</b> {escape(last_msg)}"""
-
-        btn = types.InlineKeyboardButton("🚪 Leave Group", callback_data=f"leave_{group_id}")
-        markup = types.InlineKeyboardMarkup().add(btn)
-
-        bot.send_message(message.chat.id, text, parse_mode="HTML", reply_markup=markup)
-
-# Leave group via inline button
-@bot.callback_query_handler(func=lambda call: call.data.startswith("leave_"))
-def handle_leave_inline(call):
-    if call.from_user.id != YOUR_USER_ID:
-        return bot.answer_callback_query(call.id, "❌ Not allowed")
-
-    group_id = call.data.split("_")[1]
-    confirm_btn = types.InlineKeyboardButton("✅ Confirm Leave", callback_data=f"confirmleave_{group_id}")
-    markup = types.InlineKeyboardMarkup().add(confirm_btn)
-
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text=f"⚠️ Are you sure you want me to leave group <code>{group_id}</code>?",
-        parse_mode="HTML",
-        reply_markup=markup
-    )
-
-# Confirm leave
-@bot.callback_query_handler(func=lambda call: call.data.startswith("confirmleave_"))
-def confirm_leave(call):
-    if call.from_user.id != YOUR_USER_ID:
-        return bot.answer_callback_query(call.id, "❌ Not allowed")
-
-    group_id = int(call.data.split("_")[1])
-    try:
-        bot.leave_chat(group_id)
-        bot.answer_callback_query(call.id, "✅ Left the group")
-        bot.edit_message_text(
-            chat_id=call.message.chat.id,
-            message_id=call.message.message_id,
-            text=f"<b>✅ Successfully left group:</b> <code>{group_id}</code>",
-            parse_mode="HTML"
-        )
-    except Exception as e:
-        bot.answer_callback_query(call.id, "❌ Failed")
-        bot.edit_message_text(
-            chat_id=call.message.chat.id,
-            message_id=call.message.message_id,
-            text=f"<b>❌ Failed to leave group:</b> <code>{group_id}</code>\n<code>{escape(str(e))}</code>",
-            parse_mode="HTML"
-        )
-
-# /leave <group_id> command (admin only)
-@bot.message_handler(commands=['leave'])
-def handle_leave_command(message):
-    if message.from_user.id != YOUR_USER_ID:
-        return send_html(message, "❌ Not authorized.")
-
-    parts = message.text.strip().split()
-    if len(parts) != 2:
-        return send_html(message, "<b>Usage:</b> <code>/leave -1001234567890</code>")
-
-    group_id = parts[1]
-
-    btn = types.InlineKeyboardButton("✅ Confirm Leave", callback_data=f"confirmleave_{group_id}")
-    markup = types.InlineKeyboardMarkup().add(btn)
-
-    bot.send_message(
-        message.chat.id,
-        f"⚠️ Are you sure you want me to leave group <code>{group_id}</code>?",
-        parse_mode="HTML",
-        reply_markup=markup
-    )
 
 
 # ===== START BOT =====
