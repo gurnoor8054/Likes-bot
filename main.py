@@ -20,7 +20,7 @@ SUPPORTED_REGIONS = {"ind", "sg", "eu", "me", "id", "bd", "ru", "vn", "tw", "th"
 
 # ===== USER DAILY LIMITS =====
 USER_DAILY_LIMITS = {
-    'like': 1,
+    'like': 0,
     'spam': 15,
     'visit': 50
 }
