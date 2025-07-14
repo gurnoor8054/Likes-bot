@@ -16,13 +16,13 @@ from PIL import Image
 # ===== CONFIGURATION =====
 BOT_TOKEN = os.getenv("BOT_TOKEN") or "8161038098:AAHDSJI1D09VvP3OUFsAE2RikDLLUh3qJgU"
 YOUR_USER_ID = 7863700139
-SUPPORTED_REGIONS = {"ind", "sg", "eu", "me", "id", "bd", "ru", "vn", "tw", "th", "pk", "br", "sac", "us", "cis", "na"}
+SUPPORTED_REGIONS = {"ind", "sg", "eu", "me", "id", "bd", "ru", "vn", "tw", "th", "pk"} #"br", "sac", "us", "cis", "na"
 
 # ===== USER DAILY LIMITS =====
 USER_DAILY_LIMITS = {
-    'like': 0,
+    'like': 1,
     'spam': 15,
-    'visit': 50
+    'visit': 20
 }
 
 # ===== BACKUP CONFIGURATION =====
