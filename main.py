@@ -1418,7 +1418,7 @@ def handle_prefixless_get(message):
     )
 
     try:
-        info_url = f"https://ff-player-info.vercel.api/player-info?uid={uid}&region={region}"
+        info_url = f"https://ff-player-info.vercel.app/player-info?uid={uid}&region={region}"
         info_res = requests.get(info_url, timeout=30)
         info_data = info_res.json()
         
