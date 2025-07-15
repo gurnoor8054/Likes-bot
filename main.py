@@ -1387,10 +1387,14 @@ def format_player_response(data, uid):
         )
 
     except Exception as e:
+        # Optional: Log the full error for your own debugging
+        print(f"Error fetching data for UID {uid}: {e}")
+
+        # Show a clean message to the user
         bot.edit_message_text(
             chat_id=message.chat.id,
             message_id=msg.message_id,
-            text=f"<b>⚠️ Error:</b>\n<code>{escape(str(e))}</code>",
+            text="<b>⚠️ An unexpected error occurred while fetching player info. Please try again later.</b>",
             parse_mode="HTML"
         )
 
