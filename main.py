@@ -14,7 +14,7 @@ from html import escape
 from PIL import Image
 
 # ===== CONFIGURATION =====
-BOT_TOKEN = os.getenv("BOT_TOKEN") or "8161038098:AAHDSJI1D09VvP3OUFsAE2RikDLLUh3qJgU"
+BOT_TOKEN = os.getenv("BOT_TOKEN") or "8060579466:AAEkbP85jS_fuIyQQTXekv6GtsYFKL8QJOw"
 YOUR_USER_ID = 7863700139
 SUPPORTED_REGIONS = {"ind", "sg", "eu", "me", "id", "bd", "ru", "vn", "tw", "th", "pk"} #"br", "sac", "us", "cis", "na"
 
