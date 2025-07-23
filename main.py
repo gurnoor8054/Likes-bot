@@ -257,23 +257,27 @@ def handle_remain(message):
 @bot.message_handler(commands=['like'])
 def like_command(message):
     if is_maintenance():
-        return send_html(message, "<b>🔧 Maintenance Mode Active</b>\nThe bot is currently under maintenance. Please try again later.")
+        return send_html(
+            message,
+            "<b>🔧 Maintenance Mode Active</b>\nThe bot is currently under maintenance. Please try again later."
+        )
     
     user_id = message.from_user.id
-    
+
     # Check user's daily limit
     used = get_user_usage(user_id, 'like')
     if used >= USER_DAILY_LIMITS['like']:
         reset_time = datetime.now().replace(hour=4, minute=0, second=0)
         if datetime.now().hour >= 4:
             reset_time += timedelta(days=1)
-        return send_html(message,
+        return send_html(
+            message,
             f"<b>❌ Daily Limit Reached!</b>\n"
             f"You've used all {USER_DAILY_LIMITS['like']} likes today.\n"
             f"Resets at: <code>{reset_time.strftime('%Y-%m-%d %H:%M')}</code>\n\n"
             f"Use <code>/remain</code> to check your usage."
         )
-    
+        
     # Validate input format
     parts = message.text.split()
     if len(parts) != 3:
