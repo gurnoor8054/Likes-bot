@@ -14,7 +14,7 @@ from html import escape
 from PIL import Image
 
 # ===== CONFIGURATION =====
-BOT_TOKEN = os.getenv("BOT_TOKEN") or "8060579466:AAEkbP85jS_fuIyQQTXekv6GtsYFKL8QJOw"
+BOT_TOKEN = os.getenv("BOT_TOKEN") or "token"
 YOUR_USER_ID = 7863700139
 SUPPORTED_REGIONS = {"ind", "sg", "eu", "me", "id", "bd", "ru", "vn", "tw", "th", "pk"} #"br", "sac", "us", "cis", "na"
 
@@ -318,6 +318,7 @@ def like_command(message):
     likes_given = data.get("LikesGivenByAPI", 0)
 
     if data.get("status") == 1:  # Success
+    if likes_given >= 50:
         increment_user_usage(user_id, 'like')
         return bot.edit_message_text(
             chat_id=message.chat.id,
