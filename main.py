@@ -196,7 +196,7 @@ def check_admin(user_id):
     return user_id == YOUR_USER_ID
 
 # ===== COMMAND HANDLERS =====
-@bot.message_handler(commands=['start', 'help'])
+@bot.message_handler(commands=['start', 'help'], func=lambda m: m.chat.type != 'private')
 def handle_help(message):
     help_text = """
 <b>🎮 Free Fire Bot</b>
@@ -235,7 +235,7 @@ def handle_help(message):
     send_html(message, help_text)
 
 
-@bot.message_handler(commands=['remain'])
+@bot.message_handler(commands=['remain'], func=lambda m: m.chat.type != 'private')
 def handle_remain(message):
     user_id = message.from_user.id
     
@@ -254,7 +254,7 @@ def handle_remain(message):
     
     send_html(message, "\n".join(response))
 
-@bot.message_handler(commands=['like'])
+@bot.message_handler(commands=['like'], func=lambda m: m.chat.type != 'private')
 def like_command(message):
     if is_maintenance():
         return send_html(
@@ -322,8 +322,8 @@ def like_command(message):
     likes_given = data.get("LikesGivenByAPI", 0)
 
     if data.get("status") == 1:  # Success
-    if likes_given >= 50:
-        increment_user_usage(user_id, 'like')
+        if likes_given >= 50:
+            increment_user_usage(user_id, 'like')
         return bot.edit_message_text(
             chat_id=message.chat.id,
             message_id=searching_msg.message_id,
@@ -339,7 +339,7 @@ def like_command(message):
             ),
             parse_mode='HTML'
         )
-    
+
     elif data.get("status") == 2:  # Daily limit reached
         return bot.edit_message_text(
             chat_id=message.chat.id,
@@ -357,7 +357,7 @@ def like_command(message):
             ),
             parse_mode='HTML'
         )
-    
+
     else:  # Other errors
         return bot.edit_message_text(
             chat_id=message.chat.id,
@@ -369,7 +369,8 @@ def like_command(message):
             parse_mode='HTML'
         )
         
-@bot.message_handler(commands=['spam'])
+        
+@bot.message_handler(commands=['spam'], func=lambda m: m.chat.type != 'private')
 def spam_command(message):
     if is_maintenance():
         return send_html(message, "<b>🔧 Maintenance Mode Active</b>\nThe bot is currently under maintenance. Please try again later.")
@@ -455,7 +456,7 @@ def spam_command(message):
             parse_mode='HTML'
         )
         
-@bot.message_handler(commands=['visit'])
+@bot.message_handler(commands=['visit'], func=lambda m: m.chat.type != 'private')
 def visit_command(message):
     if is_maintenance():
         return send_html(message, "<b>🔧 Maintenance Mode Active</b>\nThe bot is currently under maintenance. Please try again later.")
@@ -957,7 +958,7 @@ def handle_reset(message):
             "Everyone: <code>/reset all [like|spam|visit]</code>"
         )
         
-@bot.message_handler(func=lambda message: message.text.lower().startswith('isbanned'))
+@bot.message_handler(func=lambda m: m.text.lower().startswith('isbanned') and m.chat.type != 'private')
 def handle_isbanned(message):
     try:
         uid = message.text.split(' ')[1]
@@ -996,7 +997,7 @@ def handle_isbanned(message):
         bot.edit_message_text(chat_id=message.chat.id, message_id=searching.message_id, 
                             text=response, parse_mode='HTML')
 
-@bot.message_handler(func=lambda message: message.text.lower().startswith('region'))
+@bot.message_handler(func=lambda m: m.text.lower().startswith('region') and m.chat.type != 'private')
 def handle_region(message):
     try:
         uid = message.text.split(' ')[1]
@@ -1100,7 +1101,7 @@ def check_player_info(target_id):
         return {"error": "Request failed or timed out"}
 
 # GET COMMAND
-@bot.message_handler(func=lambda message: message.text.lower().startswith("search"))
+@bot.message_handler(func=lambda m: m.text.lower().startswith('search') and m.chat.type != 'private')
 def handle_search(message):
     try:
         # Extract nickname from command
@@ -1404,7 +1405,7 @@ def format_player_response(data, uid):
         )
 
 
-@bot.message_handler(func=lambda msg: msg.text.lower().startswith("get"))
+@bot.message_handler(func=lambda m: m.text.lower().startswith('get') and m.chat.type != 'private')
 def handle_prefixless_get(message):
     parts = message.text.strip().split()
     if len(parts) != 2 or not parts[1].isdigit():
